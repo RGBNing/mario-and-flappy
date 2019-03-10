@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            #canvas {
+                border: 1px solid black;
+            }
+        </style>
+        <script>
+var maptext =`
+              
+             w 
+ww             w 
+wwww            w    
+wwwwww       ww       
+wwwwwwwwwwwwww
+`
+maptext = maptext.substring(1, maptext.length - 1);
+                var W = 800;
+                var H = 600;
+                var TITLE = 50;
+                var FPS = 80;
+                var play = true;
+
+            function Map() {
+                this.text = maptext.split('\n')
+                console.log(this.text)
+
+                this.draw = function(ctx){
+                    var y_base = H - TITLE * this.text.length;
+                    for (var row = 0; row < this.text.length; row++){
+                        for(var col = 0; col < this.text[row].length; col++){
+                            var t = this.text[row][col];
+                            if (t =='w'){
+
+                                ctx.fillStyle = 'green'
+                                ctx.fillRect(col * TITLE , y_base + row * TITLE , TITLE , TITLE)
+                            }
+                        }
+                    }
+                }
+            }  
+            function onLoad(){
+                var canvas = document.getElementById('canvas');
+                var ctx = canvas.getContext('2d');
+                
+                
+                var score = 0;
+                var map = new Map;
+
+
+                function drawScore(ctx){
+                    ctx.font = '45px Arial';
+                    
+                    ctx.fillStyle = 'black';
+                    ctx.fillText(score +'', W / 2, H*0.1);
+                }
+               
+               
+
+                
+
+                
+
+
+                function draw(){
+                    ctx.fillStyle = "white";
+                    ctx.fillRect(0, 0, W, H);
+                    
+
+                    map.draw(ctx);
+                    if (play){
+                        setTimeout(draw, 1000/FPS);
+                    }
+                    
+                }
+                
+                draw();
+                document.addEventListener('keydown', function(e){
+                    
+                });
+                document.addEventListener('keyup', function(e){
+                   
+                });
+            }
+        </script>
+    </head>
+    <body>
+       <canvas id="canvas" width="800" height="600">
+       </canvas>
+       <script>
+           onLoad();
+       </script>
+    </body>
+</html>

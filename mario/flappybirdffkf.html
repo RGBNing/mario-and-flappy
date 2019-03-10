@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            #canvas {
+                border: 1px solid black;
+            }
+        </style>
+        <script>
+            var W = 800;
+            var H = 600;
+            var FPS = 80;
+            var play = true;
+            var G = 2.5;
+            var SPEED = 8;
+            var JUMP = 25;
+            var WH = 200;
+            var WW = 60;
+            var WSTEP = 400;
+            var FIRST_WALL = 400;
+            var WALL_MIN = 100;
+            var WALL_MAX = 300;
+            function Bird(){
+                this.x = 50;
+                this.y = 500;
+                this.dx = SPEED; 
+                this.dy = -JUMP;
+                this.w = 50;
+                this.h = 40;
+                this.image = new Image(this.w, this.h);
+                this.image.src = 'Bird.png';
+                this.update = function(){
+                    this.dy += G;
+                    this.x += this.dx;
+                    this.y += this.dy;
+                }
+                this.draw = function(ctx , cam){
+                    // ctx.fillStyle = 'red';
+                    // ctx.beginPath();
+                    // ctx.arc(this.x + this.w/2 - cam.x, this.y + this.h /2,
+                    //         this.w / 2 , 0, Math.PI * 2);
+                    // ctx.closePath();
+                    // ctx.fill();
+                    ctx.drawImage(this.image , this.x - cam.x, this.y, this.w , this.h);
+                }
+            }
+            function Wall(x, y){
+                this.x = x;
+                this.y =y; 
+                this.image1 = new Image(WW, WW / 26 * 135);
+                     this.image1.src = 'Walldown.png';
+
+                     this.image2 = new Image(WW, WW / 26 * 135);
+                     this.image2.src = 'Wallup.png';
+
+                this.draw = function(ctx, cam){
+                   
+                    ctx.fillStyle = 'gray';
+                    // ctx.fillRect(this.x - cam.x, 0, WW, this.y);
+                    ctx.drawImage(this.image1, this.x - cam.x, this.y - this.image1.height,
+                                    this.image1.width, this.image1.height);
+                    ctx.drawImage(this.image2, this.x - cam.x, this.y + WH,
+                                    this.image2.width, this.image2.height);
+                }
+            }
+
+            
+            
+            function onLoad(){
+                var canvas = document.getElementById('canvas');
+                var ctx = canvas.getContext('2d');
+                var cam = {x:0};
+                var bird = new Bird();
+                var walls = [];
+                var score = 60;
+                 
+                function setupWalls(){
+                    for (var i = 0; i <1000; i++){
+                        var x = FIRST_WALL + i * WSTEP;
+                        var y = Math.random() * (WALL_MAX - WALL_MIN) + WALL_MIN;
+                        var wall = new Wall(x, y);
+                        walls.push(wall)
+                    }
+                }
+                function collisions(){
+                    for (var w of walls){
+                        if (bird.x + bird.w > w.x && bird.x < w.x +WW &&
+                          (bird.y < w.y|| bird.y + bird.h> w.y + WH)  )
+                        {
+                            play = false;
+                        }
+                    }
+                }
+                function drawScore(ctx){
+                    ctx.font = '45px Arial';
+                    
+                    ctx.fillStyle = 'black';
+                    ctx.fillText(score +'', W / 2, H*0.1);
+                }
+               
+                function updateScore(){
+                    var k = 0;
+                    for (var w of walls){
+                        if(w.x < bird.x){
+                            k++;
+                        }
+                    }
+                    score = k;
+                }
+
+                
+
+                
+
+
+                function draw(){
+                    ctx.fillStyle = "white";
+                    ctx.fillRect(0, 0, W, H);
+                    
+                    bird.update();
+                    updateScore();
+                    collisions();
+                    bird.draw(ctx, cam);
+
+                    for (var w of walls){
+                        w.draw(ctx, cam);
+                    }
+                    cam.x += SPEED;
+                    if (play){
+                        setTimeout(draw, 1000/FPS);
+                    }
+                    drawScore(ctx);
+                    
+                }
+                setupWalls();
+                draw();
+                document.addEventListener('keydown', function(e){
+                    if (e.key == ' '){
+                        bird.dy = -JUMP;
+                    }
+                });
+                document.addEventListener('keyup', function(e){
+                   
+                });
+            }
+        </script>
+    </head>
+    <body>
+       <canvas id="canvas" width="800" height="600">
+       </canvas>
+       <script>
+           onLoad();
+       </script>
+    </body>
+</html>
