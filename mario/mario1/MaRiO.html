@@ -7,80 +7,151 @@
             }
         </style>
         <script>
-var maptext =`
-              
-             w 
-ww             w 
-wwww            w    
-wwwwww       ww       
-wwwwwwwwwwwwww
-`
+var maptext = `
+         
+    www      
+w        w    w     w
+wwwww    wwwwwwwwwwwwwwwwww
+`;
 maptext = maptext.substring(1, maptext.length - 1);
-                var W = 800;
-                var H = 600;
-                var TITLE = 50;
-                var FPS = 80;
-                var play = true;
-
-            function Map() {
-                this.text = maptext.split('\n')
-                console.log(this.text)
-
+ 
+            var W = 800;
+            var H = 600;
+            var TILE = 50;
+            var FPS = 30;
+            var G = 1;
+            var play = true;
+ 
+            function Map(){
+                this.text = maptext.split('\n');
+                this.y_base = H - TILE * this.text.length;
+ 
                 this.draw = function(ctx){
-                    var y_base = H - TITLE * this.text.length;
                     for (var row = 0; row < this.text.length; row++){
-                        for(var col = 0; col < this.text[row].length; col++){
-                            var t = this.text[row][col];
-                            if (t =='w'){
-
-                                ctx.fillStyle = 'green'
-                                ctx.fillRect(col * TITLE , y_base + row * TITLE , TITLE , TITLE)
+                       for (var col = 0; col < this.text[row].length; col++){
+                           var t = this.text[row][col];
+                           if (t == 'w'){
+                               ctx.fillStyle = '#0c0';
+                               ctx.fillRect(col * TILE, this.y_base + row * TILE,
+                                            TILE, TILE);
+                           }
+                       }
+                   }
+               }
+ 
+               this.getPos = function(row, col){
+                   var x = col * TILE
+                   var y = this.y_base + row * TILE
+                   return [x, y]
+               }
+           }
+ 
+           function Player(map){
+               this.speed= 4
+                this.jump = 10
+               this.w = 45
+               this.h = 45
+               this.x = 300
+               this.y = 300
+               this.dx = 0
+               this.dy = 0
+               this.map = map
+ 
+               this.update = function(){
+                   this.dy += G
+                   this.x += this.dx
+                   this.y += this.dy
+ 
+                   var coll_time_x = 0
+                   var coll_time_y = 0
+ 
+                   // console.log(this.x, this.y)
+ 
+                   for (var row = 0; row < this.map.text.length; row++){
+                       for (var col = 0; col < this.map.text[row].length; col++){
+                           var t = this.map.text[row][col];
+                           var [tx, ty] = this.map.getPos(row, col);
+ 
+                           if (t == 'w'){
+                               var time = 0;
+                               if (this.dx != 0 && this.y < ty + TILE && this.y + this.h > ty){
+                                    if (this.x + this.w > tx && this.x + this.w < tx + TILE){
+                                       time = (this.x + this.w - tx) / this.dx
+                                   }
+                                   if (this.x < tx + TILE && this.x > tx){
+                                       time = (this.x - (tx + TILE)) / this.dx
+                                   }
+                                   coll_time_x = Math.max(coll_time_x, time);
+                                }
+ 
+                                var time = 0;
+                                if (this.dy != 0 && this.x < tx + TILE && this.x + this.w > tx){
+                                   if (this.y + this.h > ty && this.y + this.h < ty + TILE){
+                                       time = (this.y + this.h - ty) / this.dy
+                                   }
+                                   if (this.y < ty + TILE && this.y > ty){
+                                       time = (this.y - (ty + TILE)) / this.dy
+                                   }
+                                   coll_time_y = Math.max(coll_time_y, time);
+                                }
                             }
                         }
                     }
+                    if (coll_time_x != 0){
+                        this.x -= this.dx * coll_time_x
+                        this.dx = 0
+                    }
+                    if (coll_time_y != 0){
+                        this.y -= this.dy * coll_time_y
+                        this.dy = 0
+                    }
                 }
-            }  
+ 
+                this.draw = function(ctx){
+                    ctx.fillStyle = 'red'
+                    ctx.fillRect(this.x, this.y, this.w, this.h)
+                }
+            }
+ 
             function onLoad(){
                 var canvas = document.getElementById('canvas');
                 var ctx = canvas.getContext('2d');
-                
-                
+ 
                 var score = 0;
-                var map = new Map;
-
-
+                var map = new Map();
+                var pl = new Player(map);
+ 
                 function drawScore(ctx){
-                    ctx.font = '45px Arial';
-                    
-                    ctx.fillStyle = 'black';
-                    ctx.fillText(score +'', W / 2, H*0.1);
+                    ctx.font = '40px Tahoma';
+                    ctx.fillStyle = '#000';
+                    ctx.fillText(score + '', W / 2, H*0.1);
                 }
-               
-               
-
-                
-
-                
-
-
+ 
                 function draw(){
                     ctx.fillStyle = "white";
                     ctx.fillRect(0, 0, W, H);
-                    
-
-                    map.draw(ctx);
+                   
+                    pl.update()
+ 
+                    map.draw(ctx)
+                    pl.draw(ctx)
+ 
                     if (play){
                         setTimeout(draw, 1000/FPS);
                     }
-                    
                 }
-                
+               
                 draw();
+ 
                 document.addEventListener('keydown', function(e){
-                    
+                   if ( e.key == ' '){
+                       pl.dy = -JUMP
+                   }
                 });
+ 
                 document.addEventListener('keyup', function(e){
-                   
+                if (e.key == 'ArrowRight')
+
                 });
             }
         </script>
